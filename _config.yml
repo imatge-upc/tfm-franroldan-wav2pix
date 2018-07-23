@@ -14,10 +14,10 @@ markdown: kramdown
 
 
 ### content configuration ###
-title:       "Paper title"
-keywords:    "computer vision, deep learning, whatever"
-description: "Description here"
-source_link: "https://github.com/imatge-upc/wwwtemplate"
+title:       "Speech2YouTuber"
+keywords:    "computer vision, deep learning, Youtuber, face, adversarial learning, image synthesis"
+description: "A project aiming at imaginating a face corresponding to a provided speech"
+source_link: "https://github.com/imatge-upc/speech2face/tree/master"
 favicon:     "img/favicon.ico"
 touch_icon:  "img/apple-touch-icon.png"
 # google_analytics_key: UA-49607422-1 ## put YOUR key here to enable tracking! (blank to disable)
