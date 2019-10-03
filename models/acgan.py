@@ -53,6 +53,8 @@ class generator(nn.Module):
 		if self.dataset_name == 'youtubers' and not project:
 			padding = Variable(torch.cuda.FloatTensor(embed_vector.data.shape[0], self.projected_embed_dim - 62).fill_(
 				0).float()).cuda()
+			#padding = Variable(torch.FloatTensor(embed_vector.data.shape[0], self.projected_embed_dim - 62).fill_(
+				0).float())
 			projected_embed = torch.cat([embed_vector, padding], 1).unsqueeze(2).unsqueeze(3)
 		else:
 			projected_embed = self.projection(embed_vector).unsqueeze(2).unsqueeze(3)
@@ -105,6 +107,7 @@ class discriminator(nn.Module):
 			s = self.disc_linear(x)
 		else:
 			s = nn.Linear(x2.data.shape[0] * 1, x2.data.shape[0] * 1).cuda()(x)
+			#s = nn.Linear(x2.data.shape[0] * 1, x2.data.shape[0] * 1)(x)
 
 		#s = self.sigmoid(s)
 		return s, c, x_intermediate
