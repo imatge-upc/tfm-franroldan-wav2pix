@@ -107,6 +107,9 @@ class Saver(object):
             st_dict = torch.load(os.path.join(save_path,
                                               'weights_' + \
                                               curr_ckpt))
+            #st_dict = torch.load(os.path.join(save_path,
+            #                                  'weights_' + \
+            #                                  curr_ckpt), map_location="cpu")
             if 'state_dict' in st_dict:
                 # new saving mode
                 model_state = st_dict['state_dict']
@@ -123,6 +126,8 @@ class Saver(object):
         model_dict = self.model.state_dict()
         st_dict = torch.load(ckpt_file,
                              map_location=lambda storage, loc: storage)
+        #st_dict = torch.load(ckpt_file,
+        #                     map_location=lambda storage, loc: "cpu")
         if 'state_dict' in st_dict:
             pt_dict = st_dict['state_dict']
         else:
@@ -867,6 +872,8 @@ class generator(nn.Module):
             if not only_wav:
                 padding = Variable(torch.cuda.FloatTensor(embed_vector.data.shape[0], self.projected_embed_dim - 62).fill_(
                     0).float()).cuda()
+                #padding = Variable(torch.FloatTensor(embed_vector.data.shape[0], self.projected_embed_dim - 62).fill_(
+                #    0).float())
                 projected_embed = torch.cat([embed_vector, padding, y], 1).unsqueeze(2).unsqueeze(3)
                 #print(projected_embed.data.shape)
             else:

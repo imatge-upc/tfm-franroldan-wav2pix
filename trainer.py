@@ -18,15 +18,19 @@ class Trainer(object):
             config = yaml.load(f)
 
         self.generator = gan_factory.generator_factory(type, dataset, batch_size, h, scale_size, num_channels).cuda()
+        #self.generator = gan_factory.generator_factory(type, dataset, batch_size, h, scale_size, num_channels)
         self.discriminator = gan_factory.discriminator_factory(type, batch_size, h, scale_size, num_channels).cuda()
+        #self.discriminator = gan_factory.discriminator_factory(type, batch_size, h, scale_size, num_channels)
         print(self.discriminator)
         if pre_trained_disc:
             self.discriminator.load_state_dict(torch.load(pre_trained_disc))
+            #self.discriminator.load_state_dict(torch.load(pre_trained_disc), map_location = "cpu")
         else:
             self.discriminator.apply(Utils.weights_init)
 
         if pre_trained_gen:
             self.generator.load_state_dict(torch.load(pre_trained_gen))
+            #self.generator.load_state_dict(torch.load(pre_trained_gen), map_location = "cpu")
         else:
             self.generator.apply(Utils.weights_init)
         self.dataset_name = dataset
@@ -99,7 +103,9 @@ class Trainer(object):
         mone = one * -1
 
         one = Variable(one).cuda()
+        #one = Variable(one)
         mone = Variable(mone).cuda()
+        #one = Variable(mone)
 
         gen_iteration = 0
         for epoch in range(self.num_epochs):
@@ -132,14 +138,19 @@ class Trainer(object):
                         wrong_images = sample['wrong_images']
 
                         right_images = Variable(right_images.float()).cuda()
+                        #right_images = Variable(right_images.float())
                         right_embed = Variable(right_embed.float()).cuda()
+                        #right_embed = Variable(right_embed.float())
                         wrong_images = Variable(wrong_images.float()).cuda()
+                        #wrong_images = Variable(wrong_images.float())
                     else:
                         right_images = sample['face']
                         right_embed = sample['onehot']
 
                         right_images = Variable(right_images.float()).cuda()
+                        #right_images = Variable(right_images.float())
                         right_embed = Variable(right_embed.float()).cuda() #Change to long if using embedding layer.
+                        #right_embed = Variable(right_embed.float())
                     outputs, _ = self.discriminator(right_images, right_embed, project=self.apply_projection, concat=self.apply_concat)
                     real_loss = torch.mean(outputs)
                     real_loss.backward(mone)
@@ -150,6 +161,7 @@ class Trainer(object):
                         wrong_loss.backward(one)
 
                     noise = Variable(torch.randn(right_images.size(0), self.noise_dim), volatile=True).cuda()
+                    #noise = Variable(torch.randn(right_images.size(0), self.noise_dim), volatile=True)
                     noise = noise.view(noise.size(0), self.noise_dim, 1, 1)
 
                     fake_images = Variable(self.generator(right_embed, noise, project=self.apply_projection).data)
@@ -178,6 +190,7 @@ class Trainer(object):
                     p.requires_grad = False
                 self.generator.zero_grad()
                 noise = Variable(torch.randn(right_images.size(0), 100)).cuda()
+                #noise = Variable(torch.randn(right_images.size(0), 100))
                 noise = noise.view(noise.size(0), 100, 1, 1)
                 fake_images = self.generator(right_embed, noise, project=self.apply_projection)
                 outputs, _ = self.discriminator(fake_images, right_embed, project=self.apply_projection, concat=self.apply_concat)
@@ -213,16 +226,20 @@ class Trainer(object):
                     right_embed = sample['right_embed']
                     wrong_images = sample['wrong_images']
                     wrong_images = Variable(wrong_images.float()).cuda()
+                    #wrong_images = Variable(wrong_images.float())
                 else:
                     right_images = sample['face']
                     right_embed = sample['onehot']
                 right_images = Variable(right_images.float()).cuda()
+                #right_images = Variable(right_images.float())
                 real_labels = torch.ones(right_images.size(0))
                 fake_labels = torch.zeros(right_images.size(0))
                 auxiliary_noise = torch.randn(right_embed.size(0),128)
                 #right_embed = right_embed + auxiliary_noise
                 auxiliary_noise = Variable(auxiliary_noise.float()).cuda()
+                #auxiliary_noise = Variable(auxiliary_noise.float())
                 right_embed = Variable(right_embed.float()).cuda()
+                #right_embed = Variable(right_embed.float())
 
                 # ======== One sided label smoothing ==========
                 # Helps preventing the discriminator from overpowering the
@@ -231,14 +248,18 @@ class Trainer(object):
                 smoothed_real_labels = torch.FloatTensor(Utils.smooth_label(real_labels.numpy(), -0.1))
 
                 real_labels = Variable(real_labels).cuda()
+                #real_labels = Variable(real_labels)
                 smoothed_real_labels = Variable(smoothed_real_labels).cuda()
+                #smoothed_real_labels = Variable(smoothed_real_labels)
                 fake_labels = Variable(fake_labels).cuda()
+                #fake_labels = Variable(fake_labels)
 
                 # Train the discriminator
                 self.discriminator.zero_grad()
 
 
                 noise = Variable(torch.randn(right_images.size(0), 100)).cuda()
+                #noise = Variable(torch.randn(right_images.size(0), 100))
                 noise = noise.view(noise.size(0), 100, 1, 1)
                 fake_images, projected_embed = self.generator(right_embed, noise, auxiliary_noise, project=self.apply_projection)
                 outputs, _ = self.discriminator(fake_images, projected_embed, project=self.apply_projection, concat=self.apply_concat)
@@ -329,6 +350,7 @@ class Trainer(object):
                     right_embed = sample['right_embed']
                     wrong_images = sample['wrong_images']
                     wrong_images = Variable(wrong_images.float()).cuda()
+                    #wrong_images = Variable(wrong_images.float())
                 else:
                     right_images = sample['face']
                     right_embed_noextra = sample['onehot']
@@ -338,12 +360,17 @@ class Trainer(object):
                     right_embed = torch.cat([right_embed_noextra, torch.zeros(right_embed_noextra.size(0), 1)], 1)
                     wrong_images = sample['wrong_face']
                 raw_wav = Variable(raw_wav.float()).cuda()
+                #raw_wav = Variable(raw_wav.float())
                 right_images = Variable(right_images.float()).cuda()
+                #right_images = Variable(right_images.float())
                 right_embed = Variable(right_embed.float()).cuda()
+                #right_embed = Variable(right_embed.float())
                 real_labels = torch.ones(right_images.size(0))
                 fake_labels = torch.zeros(right_images.size(0))
                 right_embed_noextra = Variable(right_embed_noextra.float()).cuda()
+                #right_embed_noextra = Variable(right_embed_noextra.float())
                 wrong_images = Variable(wrong_images.float()).cuda()
+                #wrong_images = Variable(wrong_images.float())
 
                 # ======== One sided label smoothing ==========
                 # Helps preventing the discriminator from overpowering the
@@ -352,8 +379,11 @@ class Trainer(object):
                 smoothed_real_labels = torch.FloatTensor(Utils.smooth_label(real_labels.numpy(), -0.1))
 
                 real_labels = Variable(real_labels).cuda()
+                #real_labels = Variable(real_labels)
                 smoothed_real_labels = Variable(smoothed_real_labels).cuda()
+                #smoothed_real_labels = Variable(smoothed_real_labels)
                 fake_labels = Variable(fake_labels).cuda()
+                #fake_labels = Variable(fake_labels)
 
                 # Train the discriminator
                 self.discriminator.zero_grad()
@@ -361,23 +391,31 @@ class Trainer(object):
                 _, targets = right_embed.max(dim=1)
                 targets = Variable(torch.LongTensor(targets.cpu()))
                 dis_errD_real = disc_criterion(outputs.squeeze(), smoothed_real_labels).cuda()
+                #dis_errD_real = disc_criterion(outputs.squeeze(), smoothed_real_labels)
                 aux_errD_real = aux_criterion(aux_output.cpu().float(), targets.cpu().long()).cuda()
+                #aux_errD_real = aux_criterion(aux_output.cpu().float(), targets.cpu().long())
                 errD_real = dis_errD_real + aux_errD_real
                 #errD_real.backward(retain_graph=True)
                 D_x = outputs.data.mean()
                 # compute the current classification accuracy
                 accuracy = compute_acc(aux_output.cuda(), real_labels.cuda().long())
+                #accuracy = compute_acc(aux_output, real_labels.long())
                 _, targets_fake = fake_aux.max(dim=1)
                 targets_fake = Variable(torch.LongTensor(targets_fake.cpu()))
                 noise = Variable(torch.randn(right_images.size(0), 100)).cuda()
+                #noise = Variable(torch.randn(right_images.size(0), 100))
                 noise = noise.view(noise.size(0), 100, 1, 1)
                 fake_images, _ = self.generator(raw_wav, right_embed_noextra, noise, noise, project=self.apply_projection)
                 outputs, aux_output, activation_fake= self.discriminator(fake_images, fake_aux, project=self.apply_projection)
                 dis_errD_fake = disc_criterion(outputs.squeeze(), fake_labels).cuda()
+                #dis_errD_fake = disc_criterion(outputs.squeeze(), fake_labels)
                 aux_errD_fake = aux_criterion(aux_output.cpu().float(), targets_fake.cpu().long()).cuda()
+                #aux_errD_fake = aux_criterion(aux_output.cpu().float(), targets_fake.cpu().long())
                 outputs, aux_output, activation_fake = self.discriminator(wrong_images, fake_aux, project=self.apply_projection)
                 cls_errD_fake = disc_criterion(outputs.squeeze(), fake_labels).cuda()
+                #cls_errD_fake = disc_criterion(outputs.squeeze(), fake_labels)
                 cls_aux_errD_fake = aux_criterion(aux_output.cpu().float(), targets_fake.cpu().long()).cuda()
+                #cls_aux_errD_fake = aux_criterion(aux_output.cpu().float(), targets_fake.cpu().long())
                 errD_fake = dis_errD_fake + aux_errD_fake + cls_errD_fake + cls_aux_errD_fake
                 #errD_fake.backward(retain_graph=True)
                 D_G_z1 = outputs.data.mean()
@@ -391,7 +429,9 @@ class Trainer(object):
                 self.generator.zero_grad()
                 disc_output, aux_output, activation_fake = self.discriminator(fake_images, fake_aux, project=self.apply_projection)
                 dis_errG = disc_criterion(disc_output.squeeze(), real_labels).cuda()
+                #dis_errG = disc_criterion(disc_output.squeeze(), real_labels)
                 aux_errG = aux_criterion(aux_output, targets.cuda().long()).cuda()
+                #aux_errG = aux_criterion(aux_output, targets.long())
                 errG = dis_errG - aux_errG\
                          + self.l2_coef * l2_loss(activation_fake, activation_real.detach()) \
                          + self.l1_coef * l1_loss(fake_images, right_images)
@@ -426,6 +466,7 @@ class Trainer(object):
 
     def _train_vanilla_wgan(self):
         one = Variable(torch.FloatTensor([1])).cuda()
+        #one = Variable(torch.FloatTensor([1]))
         mone = one * -1
         gen_iteration = 0
 
@@ -456,12 +497,14 @@ class Trainer(object):
 
                  right_images = sample['right_images']
                  right_images = Variable(right_images.float()).cuda()
+                 #right_images = Variable(right_images.float())
 
                  outputs, _ = self.discriminator(right_images)
                  real_loss = torch.mean(outputs)
                  real_loss.backward(mone)
 
                  noise = Variable(torch.randn(right_images.size(0), self.noise_dim), volatile=True).cuda()
+                 #noise = Variable(torch.randn(right_images.size(0), self.noise_dim), volatile=True)
                  noise = noise.view(noise.size(0), self.noise_dim, 1, 1)
 
                  fake_images = Variable(self.generator(noise).data)
@@ -486,6 +529,7 @@ class Trainer(object):
 
              self.generator.zero_grad()
              noise = Variable(torch.randn(right_images.size(0), 100)).cuda()
+             #noise = Variable(torch.randn(right_images.size(0), 100))
              noise = noise.view(noise.size(0), 100, 1, 1)
              fake_images = self.generator(noise)
              outputs, _ = self.discriminator(fake_images)
@@ -517,6 +561,7 @@ class Trainer(object):
                 right_images = sample['right_images']
 
                 right_images = Variable(right_images.float()).cuda()
+                #right_images = Variable(right_images.float())
 
                 real_labels = torch.ones(right_images.size(0))
                 fake_labels = torch.zeros(right_images.size(0))
@@ -528,8 +573,11 @@ class Trainer(object):
                 smoothed_real_labels = torch.FloatTensor(Utils.smooth_label(real_labels.numpy(), -0.1))
 
                 real_labels = Variable(real_labels).cuda()
+                #real_labels = Variable(real_labels)
                 smoothed_real_labels = Variable(smoothed_real_labels).cuda()
+                #smoothed_real_labels = Variable(smoothed_real_labels)
                 fake_labels = Variable(fake_labels).cuda()
+                #fake_labels = Variable(fake_labels)
 
 
                 # Train the discriminator
@@ -539,6 +587,7 @@ class Trainer(object):
                 real_score = outputs
 
                 noise = Variable(torch.randn(right_images.size(0), 100)).cuda()
+                #noise = Variable(torch.randn(right_images.size(0), 100))
                 noise = noise.view(noise.size(0), 100, 1, 1)
                 fake_images = self.generator(noise)
                 outputs, _ = self.discriminator(fake_images)
@@ -553,6 +602,7 @@ class Trainer(object):
                 # Train the generator
                 self.generator.zero_grad()
                 noise = Variable(torch.randn(right_images.size(0), 100)).cuda()
+                #noise = Variable(torch.randn(right_images.size(0), 100))
                 noise = noise.view(noise.size(0), 100, 1, 1)
                 fake_images = self.generator(noise)
                 outputs, activation_fake = self.discriminator(fake_images)
@@ -599,8 +649,11 @@ class Trainer(object):
                 image = sample['face']
                 identity = sample['onehot']
                 image = Variable(image.float()).cuda()
+                #image = Variable(image.float())
                 identity = Variable(identity.float()).cuda()
+                #identity = Variable(identity.float())
                 noise = Variable(torch.randn(image.size(0), 100)).cuda()
+                #noise = Variable(torch.randn(image.size(0), 100))
                 noise = noise.view(noise.size(0), 100, 1, 1)
 
                 #Train discriminator:
@@ -673,18 +726,23 @@ class Trainer(object):
                     right_embed = sample['right_embed']
                     wrong_images = sample['wrong_images']
                     wrong_images = Variable(wrong_images.float()).cuda()
+                    #wrong_images = Variable(wrong_images.float())
                 else:
                     right_images = sample['face']
                     right_embed = sample['onehot']
                     raw_wav = sample['audio']
                 right_images = Variable(right_images.float()).cuda()
+                #right_images = Variable(right_images.float())
                 raw_wav = Variable(raw_wav.float()).cuda()
+                #raw_wav = Variable(raw_wav.float())
                 real_labels = torch.ones(right_images.size(0))
                 fake_labels = torch.zeros(right_images.size(0))
                 auxiliary_noise = torch.randn(right_embed.size(0), 128)
                 # right_embed = right_embed + auxiliary_noise
                 auxiliary_noise = Variable(auxiliary_noise.float()).cuda()
+                #auxiliary_noise = Variable(auxiliary_noise.float())
                 right_embed = Variable(right_embed.float()).cuda()
+                #right_embed = Variable(right_embed.float())
 
                 # ======== One sided label smoothing ==========
                 # Helps preventing the discriminator from overpowering the
@@ -693,12 +751,16 @@ class Trainer(object):
                 smoothed_real_labels = torch.FloatTensor(Utils.smooth_label(real_labels.numpy(), -0.1))
 
                 real_labels = Variable(real_labels).cuda()
+                #real_labels = Variable(real_labels)
                 smoothed_real_labels = Variable(smoothed_real_labels).cuda()
+                #smoothed_real_labels = Variable(smoothed_real_labels)
                 fake_labels = Variable(fake_labels).cuda()
+                #fake_labels = Variable(fake_labels)
                 # Train the discriminator
                 self.discriminator.zero_grad()
 
                 noise = Variable(torch.randn(right_images.size(0), 100)).cuda()
+                #noise = Variable(torch.randn(right_images.size(0), 100))
                 noise = noise.view(noise.size(0), 100, 1, 1)
                 fake_images, projected_embed = self.generator(raw_wav, right_embed, noise, auxiliary_noise,
                                                               project=self.apply_projection)
@@ -718,6 +780,7 @@ class Trainer(object):
                 # Train the generator
                 self.generator.zero_grad()
                 noise = Variable(torch.randn(right_images.size(0), 100)).cuda()
+                #noise = Variable(torch.randn(right_images.size(0), 100))
                 noise = noise.view(noise.size(0), 100, 1, 1)
                 fake_images, projected_embed = self.generator(raw_wav, right_embed, noise, auxiliary_noise,
                                                               project=self.apply_projection)
@@ -772,13 +835,18 @@ class Trainer(object):
             if not os.path.exists('results/{0}'.format(self.save_path)):
                 os.makedirs('results/{0}'.format(self.save_path))
             raw_wav = Variable(raw_wav.float()).cuda()
+            #raw_wav = Variable(raw_wav.float())
             right_images = Variable(right_images.float()).cuda()
+            #right_images = Variable(right_images.float())
             right_embed = Variable(right_embed.float()).cuda()
+            #right_embed = Variable(right_embed.float())
             auxiliary_noise = torch.randn(right_embed.size(0), 128)
             # right_embed = right_embed + auxiliary_noise
             auxiliary_noise = Variable(auxiliary_noise.float()).cuda()
+            #auxiliary_noise = Variable(auxiliary_noise.float())
             # Train the generator
             noise = Variable(torch.randn(right_images.size(0), 100)).cuda()
+            #noise = Variable(torch.randn(right_images.size(0), 100))
             noise = noise.view(noise.size(0), 100, 1, 1)
             #self.generator.eval()
             fake_images, _ = self.generator(raw_wav, right_embed, noise, auxiliary_noise, project=self.apply_projection)

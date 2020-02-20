@@ -57,6 +57,8 @@ class generator(nn.Module):
 		if self.dataset_name == 'youtubers' and not project:
 			padding = Variable(torch.cuda.FloatTensor(embed_vector.data.shape[0], self.projected_embed_dim - 62).fill_(
 				0).float()).cuda()
+			#padding = Variable(torch.FloatTensor(embed_vector.data.shape[0], self.projected_embed_dim - 62).fill_(
+				0).float())
 			projected_embed = torch.cat([embed_vector, padding], 1).unsqueeze(2).unsqueeze(3)
 		else:
 			projected_embed = self.projection(embed_vector).unsqueeze(2).unsqueeze(3)
@@ -121,6 +123,7 @@ class discriminator(nn.Module):
 			if concat:
 				padding = Variable(
 					torch.cuda.FloatTensor(embed.data.shape[0], 128 - embed.data.shape[1]).fill_(0).float()).cuda()
+					#torch.FloatTensor(embed.data.shape[0], 128 - embed.data.shape[1]).fill_(0).float())
 				embed_vector = torch.cat([embed, padding], 1).unsqueeze(2).unsqueeze(3).repeat(1, 1, 4, 4)
 				x = torch.cat([x_intermediate, embed_vector], 1)
 			elif only_wav:
